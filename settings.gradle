@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "DIProjectAndroid17_139_011_197"
