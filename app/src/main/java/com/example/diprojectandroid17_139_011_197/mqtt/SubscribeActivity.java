@@ -14,8 +14,7 @@ public class SubscribeActivity extends AppCompatActivity {
     private Bundle Arguments;
     private MqttClient client;
 
-    //    Intent intent = getIntent();
-//    String tpc = intent.getStringExtra(MainActivity.EXTRA_TEXT2);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

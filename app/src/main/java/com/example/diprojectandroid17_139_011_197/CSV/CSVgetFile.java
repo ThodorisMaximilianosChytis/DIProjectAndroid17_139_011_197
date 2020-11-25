@@ -23,11 +23,8 @@ import java.util.List;
 
 public class CSVgetFile extends AppCompatActivity {
 
-    private List<String[]> csvBody;
-    private File csvfile;
     String csvFilePath;
-//    private int nofrows;
-//    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
     @Override
@@ -44,45 +41,9 @@ public class CSVgetFile extends AppCompatActivity {
         startActivityForResult(chooseintent,1);
 
 
-//        Intent intent = new Intent();
-//        intent.putExtra("csvFilepath","/storage/emulated/0/documents/vehicle_26.csv");
-//        setResult(1, intent);
-//
-//        //finish();
 
 
     }
-
-
-
-//    private void Readfile(){
-//
-//        //na dialegei o xrhsths
-//
-////        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-////        intent.setType("documents/*");
-////        startActivityForResult(intent,1);
-//
-//
-//
-//        try {
-//            String csvFilepath = "/storage/emulated/0/documents/vehicle_26.csv";
-////            File csvfile = new File(Environment.getExternalStorageState() + "/documents/vehicle_26.csv");
-//            csvfile = new File("/storage/emulated/0/documents/vehicle_26.csv");
-//            CSVReader reader = new CSVReader(new FileReader(csvfile.getAbsolutePath()));
-//
-//            this.csvBody = reader.readAll();
-//            for (int row=1; row< csvBody.size(); row++){
-//                Log.d("epitelouskaloneo", csvBody.get(row)[2]);
-//
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            Toast.makeText(this, "The specified file was not found", Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
 
 
 //na dilagei o xrhsths

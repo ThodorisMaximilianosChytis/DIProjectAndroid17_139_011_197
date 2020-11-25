@@ -12,7 +12,6 @@ import java.util.List;
 public class CSVReadlines {
     private File csvfile;
     private List<String[]> csvBody;
-    private int nofrows;
 
     public CSVReadlines(String csvFilepath) throws IOException {
         Readfile(csvFilepath);

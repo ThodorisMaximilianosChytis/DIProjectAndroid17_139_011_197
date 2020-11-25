@@ -13,13 +13,14 @@ public class SimpleMqttCallback implements MqttCallback {
     }
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-//        System.out.println("Message received:\t"+ new String(mqttMessage.getPayload()) );
+
         Log.d("MqttCallback","message arrived!" + new String(mqttMessage.getPayload()));
 
     }
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+
         Log.d("MqttCallback","delivery complete!");
 
     }
