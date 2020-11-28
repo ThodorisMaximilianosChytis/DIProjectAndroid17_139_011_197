@@ -45,6 +45,8 @@ public class PublishActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_publish);
 
+
+
             bs = findViewById(R.id.stop);
             bs.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -105,10 +107,17 @@ public class PublishActivity extends AppCompatActivity {
 //                     TODO Extract the data returned from the child Activity.
                     Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
 
+
                     try {
                         Connect(data.getStringExtra("csvFilepath"));
-                    } catch (MqttException | IOException e) {
+                    } catch (MqttException e) {
                         e.printStackTrace();
+                        Toast.makeText(getApplicationContext(),"Could not connect to " + "tcp://" + Arguments.getString("IP") + ":", Toast.LENGTH_LONG).show();
+                        this.finish();
+                    }catch (IOException  e){
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(),"Could not open file", Toast.LENGTH_LONG).show();
+                        this.finish();
                     }
 
                 }else{
@@ -121,7 +130,7 @@ public class PublishActivity extends AppCompatActivity {
     }
 
 
-    private void Connect(String csvFilepath) throws MqttException, IOException {
+    private void Connect(String csvFilepath) throws IOException, MqttException {
 //        String IP="test.mosquitto.org";
 //        String Port="1883";
 
@@ -131,15 +140,22 @@ public class PublishActivity extends AppCompatActivity {
         String clientId= MqttClient.generateClientId();
 
 
+        try {
+            client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getString("Port"), clientId, new MemoryPersistence());
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
 
-        client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getString("Port"), clientId, new MemoryPersistence());
+
         client.setCallback(new SimpleMqttCallback());
 
         client.connect();
 
+
         mess = new MqttMessage();
-//        sendflag =true;
+
         csvlines = new CSVReadlines(csvFilepath);
+
         row=1;
 
         startRepeatingTask();
@@ -191,7 +207,7 @@ public class PublishActivity extends AppCompatActivity {
             startActivity(new Intent(getApplicationContext(), MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
         }else if ( row==csvlines.getsize()) {
             CancelSend("EndOFile");
-        }else if(Arguments.getInt("t")+1==row){
+        }else if(Arguments.getInt("t")+1==row ){
             CancelSend("TimeOut");
         }
     }

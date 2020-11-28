@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         Arguments = new Bundle();
         Arguments.putString("IP","test.mosquitto.org");
         Arguments.putString("Port","1883");
-        Arguments.putInt("t",10);
+        Arguments.putInt("t",-1);
 
 
         //WORK WITH BUTTONS
