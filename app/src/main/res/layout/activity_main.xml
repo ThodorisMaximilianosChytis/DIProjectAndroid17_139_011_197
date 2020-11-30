@@ -12,7 +12,7 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:inputType="textPersonName"
-            android:hint="roadinfoa2e"
+            android:hint="roadinfo"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.497"
@@ -31,20 +31,6 @@
             app:layout_constraintTop_toBottomOf="@+id/topic1"
             app:layout_constraintVertical_bias="0.047" />
 
-    <EditText
-            android:id="@+id/topic2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:hint="roadinfoe2a"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pub"
-            app:layout_constraintVertical_bias="0.099" />
-
     <Button
             android:id="@+id/sub"
             android:layout_width="wrap_content"
@@ -53,9 +39,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/topic2"
-            app:layout_constraintVertical_bias="0.09" />
-
+            android:layout_marginBottom="468dp"/>
     <Button
             android:id="@+id/sett"
             android:layout_width="wrap_content"

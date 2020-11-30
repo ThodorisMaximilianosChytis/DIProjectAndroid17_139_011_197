@@ -112,7 +112,7 @@ public class PublishActivity extends AppCompatActivity {
                         Connect(data.getStringExtra("csvFilepath"));
                     } catch (MqttException e) {
                         e.printStackTrace();
-                        Toast.makeText(getApplicationContext(),"Could not connect to " + "tcp://" + Arguments.getString("IP") + ":", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(),"Could not connect to " + "tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), Toast.LENGTH_LONG).show();
                         this.finish();
                     }catch (IOException  e){
                         e.printStackTrace();
@@ -141,7 +141,7 @@ public class PublishActivity extends AppCompatActivity {
 
 
         try {
-            client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getString("Port"), clientId, new MemoryPersistence());
+            client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
         } catch (MqttException e) {
             e.printStackTrace();
         }

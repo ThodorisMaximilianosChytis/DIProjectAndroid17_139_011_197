@@ -37,19 +37,29 @@ public class SubscribeActivity extends AppCompatActivity {
 
     private void Subscribe() throws MqttException {
 
-        Toast.makeText(getApplicationContext(), "== START SUBSCRIBER ==", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "SUBSCRIBER to " + Arguments.getString("topic"), Toast.LENGTH_LONG).show();
 
         String clientId= MqttClient.generateClientId();
 
-        client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getString("Port"), clientId, new MemoryPersistence());
+        client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
 
         client.setCallback( new SimpleMqttCallback() );
         client.connect();
 
-        client.subscribe("roadinfoe2a");
+        client.subscribe(Arguments.getString("topic"));
 
 
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            client.disconnect();
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
@@ -40,14 +41,25 @@ public class MainActivity extends AppCompatActivity {
     private NetworkChangeReceiver mNetworkReceiver;
 
 
-    public void Publish() {
 
-        Intent intent = new Intent(this, PublishActivity.class);
+    private String updateTopic(){
 
         EditText topic1 = (EditText) findViewById(R.id.topic1);
         String t1 = topic1.getText().toString();
 
-        if (t1.isEmpty()){ t1 = topic1.getHint().toString(); }
+        Log.d("topic",t1);
+
+        if (t1.isEmpty()){
+            t1 = topic1.getHint().toString();
+        }
+        return t1;
+    }
+
+    public void Publish() {
+
+        Intent intent = new Intent(this, PublishActivity.class);
+
+        String t1 = updateTopic();
 
         intent.putExtra("topic", t1);
         intent.putExtras(Arguments);
@@ -60,12 +72,10 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, SubscribeActivity.class);
 
-        EditText topic2 = (EditText) findViewById(R.id.topic2);
-        String t2 = topic2.getText().toString();
+        String t1 = updateTopic();
 
-        if (t2.isEmpty()){ t2 = topic2.getHint().toString(); }
+        intent.putExtra("topic", t1);
 
-        intent.putExtra("topic", t2);
         intent.putExtras(Arguments);
 
         startActivity(intent);
@@ -77,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent,SETTINGS_REQUEST_CODE);
 
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -132,9 +143,8 @@ public class MainActivity extends AppCompatActivity {
         //set deafault values
         Arguments = new Bundle();
         Arguments.putString("IP","test.mosquitto.org");
-        Arguments.putString("Port","1883");
+        Arguments.putInt("Port",1883);
         Arguments.putInt("t",-1);
-
 
         //WORK WITH BUTTONS
 
@@ -208,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mNetworkReceiver);
-//        scheduler.shutdown();
+
     }
 }
 

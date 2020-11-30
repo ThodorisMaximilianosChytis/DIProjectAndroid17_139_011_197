@@ -35,7 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         intent.putExtra("IP", IP);
-        intent.putExtra("Port", Port);
+        intent.putExtra("Port", Integer.parseInt(Port));
         intent.putExtra("t", Integer.parseInt(st));
 
         setResult(1, intent);
