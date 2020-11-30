@@ -46,17 +46,17 @@ public class CSVgetFile extends AppCompatActivity {
     }
 
 
-//na dilagei o xrhsths
+//na dialagei o xrhsths
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Check which request we're responding to
+
         if (requestCode == 1) {
-            // Make sure the request was successful
+
 
             if (resultCode == RESULT_OK) {
                 Uri FileUri = data.getData();
-//                ing with the contact here (bigger example below)
+
                 Uri selectedFile = data.getData();
                 String[] filePathColumn = { MediaStore.Images.Media.DATA };
                 Cursor cursor = getContentResolver().query(selectedFile,filePathColumn, null, null, null);
@@ -82,17 +82,7 @@ public class CSVgetFile extends AppCompatActivity {
 
         int Permission = checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
         if (Permission != PackageManager.PERMISSION_GRANTED) {
-//            if (!shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//                showMessageOKCancel("You need to allow access to FILES",
-//                        new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_PERMISSIONS);
-//
-//                            }
-//                        });
-//                return;
-//            }
+
             requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
                     REQUEST_CODE_ASK_PERMISSIONS);
 //            Return();
@@ -124,15 +114,11 @@ public class CSVgetFile extends AppCompatActivity {
             case REQUEST_CODE_ASK_PERMISSIONS:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
-//                    Readfile();
-                    Log.d("please se parakalw na emafnisteis sto log", "amananamanaaman");
                     Return(1);
-
 
                 } else {
                     // Permission Denied
-                    Toast.makeText(this, "READ_EXTERNAL_MEMORY Denied", Toast.LENGTH_SHORT)
-                            .show();
+                    Toast.makeText(this, "READ_EXTERNAL_MEMORY Denied", Toast.LENGTH_SHORT).show();
                     Return(0);
 
                 }
@@ -141,17 +127,6 @@ public class CSVgetFile extends AppCompatActivity {
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
-
-
-//    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
-//        new AlertDialog.Builder(this)
-//                .setMessage(message)
-//                .setCancelable(false)
-//                .setPositiveButton("OK", okListener)
-//                .setNegativeButton("Cancel", null)
-//                .create()
-//                .show();
-//    }
 
 
 }

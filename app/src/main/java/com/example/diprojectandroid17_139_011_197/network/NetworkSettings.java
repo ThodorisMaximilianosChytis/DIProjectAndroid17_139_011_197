@@ -18,7 +18,7 @@ public class NetworkSettings extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_network_settings);
 
-        bsettings = findViewById(R.id.enable); //publish
+        bsettings = findViewById(R.id.enable);
 
         bsettings.setOnClickListener(new View.OnClickListener() {
             @Override
