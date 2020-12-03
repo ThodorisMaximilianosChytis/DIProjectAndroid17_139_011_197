@@ -88,19 +88,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    //result from settings
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch(requestCode) {
             case (SETTINGS_REQUEST_CODE) : {
                 if (resultCode == 1) {
-//                     TODO Extract the data returned from the child Activity.
-                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
 
                     setArguments(data.getExtras());
 
-                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), "SET IP: " + Arguments.getString("IP"), Toast.LENGTH_LONG).show();
 
                 }
                 break;
@@ -137,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //broadcast network receiver
         mNetworkReceiver = new NetworkChangeReceiver();
         registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (isNetworkAvailable() == true){
                     Subscribe();
-                }else{
+                }else{          //prompt to enable internet
                     startActivity(new Intent(getApplicationContext(),NetworkSettings.class) );
                 }
 

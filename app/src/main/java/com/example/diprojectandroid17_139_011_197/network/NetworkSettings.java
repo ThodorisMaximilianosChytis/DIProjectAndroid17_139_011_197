@@ -20,6 +20,7 @@ public class NetworkSettings extends AppCompatActivity {
 
         bsettings = findViewById(R.id.enable);
 
+        //open phone settings
         bsettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

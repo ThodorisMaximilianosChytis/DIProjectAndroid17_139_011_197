@@ -35,7 +35,7 @@ public class CSVgetFile extends AppCompatActivity {
         csvFilePath=null;
 
 
-
+        // Search for file
         Intent chooseintent = new Intent(Intent.ACTION_GET_CONTENT);
         chooseintent.setType("text/csv/*");
         startActivityForResult(chooseintent,1);
@@ -46,8 +46,8 @@ public class CSVgetFile extends AppCompatActivity {
     }
 
 
-//na dialagei o xrhsths
 
+//result from search
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -55,8 +55,7 @@ public class CSVgetFile extends AppCompatActivity {
 
 
             if (resultCode == RESULT_OK) {
-                Uri FileUri = data.getData();
-
+                //get file path
                 Uri selectedFile = data.getData();
                 String[] filePathColumn = { MediaStore.Images.Media.DATA };
                 Cursor cursor = getContentResolver().query(selectedFile,filePathColumn, null, null, null);
@@ -68,6 +67,7 @@ public class CSVgetFile extends AppCompatActivity {
 
             }
             if (csvFilePath!=null){
+                //ask for storage permissions
                 verifyStoragePermissions();
             }else{
                 Toast.makeText(this, "No file selected", Toast.LENGTH_SHORT).show();
@@ -106,8 +106,7 @@ public class CSVgetFile extends AppCompatActivity {
     }
 
 
-
-
+    //result from file permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {

@@ -29,8 +29,9 @@ public class PublishActivity extends AppCompatActivity {
         private static final int CSVPERMISSION_REQUEST_CODE=2;
         private Bundle Arguments;
         private Button bs;
-
+//      T = 1s
         private int mInterval = 1000;
+//      Handler for repeated send
         private Handler mHandler;
 
         MqttClient client;
@@ -70,11 +71,11 @@ public class PublishActivity extends AppCompatActivity {
 
             ((TextView)findViewById(R.id.textView2)).setText(Arguments.getString("topic"));
 
-
+            //get file path
             Intent intent = new Intent(this, CSVgetFile.class);
             startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
 
-
+            //handler for repeating task
             mHandler = new Handler();
 
 
@@ -89,7 +90,7 @@ public class PublishActivity extends AppCompatActivity {
     }
 
     private void CancelSend(String message) throws MqttException {
-//            sendflag=false;
+
             stopRepeatingTask();
             Toast.makeText(getApplicationContext(),message, Toast.LENGTH_LONG).show();
             Disconnect();
@@ -98,6 +99,7 @@ public class PublishActivity extends AppCompatActivity {
 
     }
 
+    //result from csvgetfile
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -166,7 +168,7 @@ public class PublishActivity extends AppCompatActivity {
 
 
 
-
+//repeated task
     Runnable mRepeatSend = new Runnable() {
         @Override
         public void run() {
@@ -218,7 +220,6 @@ public class PublishActivity extends AppCompatActivity {
 
     void stopRepeatingTask() {
         mHandler.removeCallbacks(mRepeatSend);
-
     }
 
     private void Disconnect() throws MqttException {
