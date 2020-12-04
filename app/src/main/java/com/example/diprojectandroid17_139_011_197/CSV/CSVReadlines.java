@@ -1,28 +1,35 @@
 package com.example.diprojectandroid17_139_011_197.CSV;
 
+import android.net.Uri;
 import android.widget.Toast;
 import com.opencsv.CSVReader;
+import android.content.Context;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+
+
+import java.io.*;
 import java.util.List;
 
 public class CSVReadlines {
-    private File csvfile;
+ 
     private List<String[]> csvBody;
+    private InputStream csvInputS;
+    Context context;
 
-    public CSVReadlines(String csvFilepath) throws IOException {
-        Readfile(csvFilepath);
+
+    public CSVReadlines(String csvURIString,Context _context) throws IOException {
+        context= _context;
+        Readfile(csvURIString);
     }
 
 
-    private void Readfile(String csvfilepath) throws IOException {
+    private void Readfile(String csvURIString) throws IOException {
 
-        csvfile = new File(csvfilepath);
+        csvInputS =  context.getContentResolver().openInputStream(Uri.parse(csvURIString));
 
-        CSVReader reader = new CSVReader(new FileReader(csvfile.getAbsolutePath()));
+
+        CSVReader reader = new CSVReader(new InputStreamReader(csvInputS));
+
         this.csvBody = reader.readAll();
 
     }

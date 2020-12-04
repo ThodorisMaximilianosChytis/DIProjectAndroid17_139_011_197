@@ -64,7 +64,7 @@ public class PublishActivity extends AppCompatActivity {
             Intent i = getIntent();
             Arguments = i.getExtras();
 
-            Log.d("checktopic", Arguments.getString("IP"));
+//            Log.d("checktopic", Arguments.getString("IP"));
 
 //            Log.d("checkip",Arguments.getString("IP"));
 //            Log.d("checktopic",Arguments.getString("topic1"));
@@ -106,18 +106,18 @@ public class PublishActivity extends AppCompatActivity {
         switch(requestCode) {
             case (CSVPERMISSION_REQUEST_CODE) : {
                 if (resultCode == 1) {
-//                     TODO Extract the data returned from the child Activity.
-                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
+//                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
 
 
                     try {
-                        Connect(data.getStringExtra("csvFilepath"));
+                        Connect(data.getStringExtra("csvURI"));
                     } catch (MqttException e) {
                         e.printStackTrace();
                         Toast.makeText(getApplicationContext(),"Could not connect to " + "tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), Toast.LENGTH_LONG).show();
                         this.finish();
                     }catch (IOException  e){
                         e.printStackTrace();
+//                        Log.d("path",data.getStringExtra("csvURI"));
                         Toast.makeText(getApplicationContext(),"Could not open file", Toast.LENGTH_LONG).show();
                         this.finish();
                     }
@@ -132,12 +132,12 @@ public class PublishActivity extends AppCompatActivity {
     }
 
 
-    private void Connect(String csvFilepath) throws IOException, MqttException {
+    private void Connect(String csvUriString) throws IOException, MqttException {
 //        String IP="test.mosquitto.org";
 //        String Port="1883";
 
-            Log.d("checkip",Arguments.getString("IP"));
-            Log.d("checktopic",Arguments.getString("topic"));
+//            Log.d("checkip",Arguments.getString("IP"));
+//            Log.d("checktopic",Arguments.getString("topic"));
 
         String clientId= MqttClient.generateClientId();
 
@@ -156,7 +156,7 @@ public class PublishActivity extends AppCompatActivity {
 
         mess = new MqttMessage();
 
-        csvlines = new CSVReadlines(csvFilepath);
+        csvlines = new CSVReadlines(csvUriString,getApplicationContext());
 
         row=1;
 

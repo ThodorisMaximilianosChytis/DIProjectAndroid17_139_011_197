@@ -16,14 +16,14 @@ import android.os.Bundle;
 import com.example.diprojectandroid17_139_011_197.R;
 import com.opencsv.CSVReader;
 
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CSVgetFile extends AppCompatActivity {
 
-    String csvFilePath;
+    Uri csvURI;
 
     final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
@@ -32,7 +32,7 @@ public class CSVgetFile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_csv);
 
-        csvFilePath=null;
+        csvURI=null;
 
 
         // Search for file
@@ -55,21 +55,16 @@ public class CSVgetFile extends AppCompatActivity {
 
 
             if (resultCode == RESULT_OK) {
-                //get file path
-                Uri selectedFile = data.getData();
-                String[] filePathColumn = { MediaStore.Images.Media.DATA };
-                Cursor cursor = getContentResolver().query(selectedFile,filePathColumn, null, null, null);
-                cursor.moveToFirst();
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                csvFilePath = cursor.getString(columnIndex);
-                Log.d("path",csvFilePath);
-                cursor.close();
+                //get file uri  path
+                csvURI = data.getData();
 
             }
-            if (csvFilePath!=null){
+            if (csvURI!=null){
                 //ask for storage permissions
                 verifyStoragePermissions();
             }else{
+//                Log.d("path",csvFilePath);
+
                 Toast.makeText(this, "No file selected", Toast.LENGTH_SHORT).show();
                 this.finish();
             }
@@ -96,10 +91,10 @@ public class CSVgetFile extends AppCompatActivity {
 
     private void Return(int resultcode){
         Intent intent = new Intent();
-        if (csvFilePath==null){
+        if (csvURI==null){
             setResult(0,intent);
         }else {
-            intent.putExtra("csvFilepath", csvFilePath);
+            intent.putExtra("csvURI", csvURI.toString());
             setResult(resultcode, intent);
         }
         finish();

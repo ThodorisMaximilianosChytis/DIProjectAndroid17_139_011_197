@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         EditText topic1 = (EditText) findViewById(R.id.topic1);
         String t1 = topic1.getText().toString();
 
-        Log.d("topic",t1);
+//        Log.d("topic",t1);
 
         if (t1.isEmpty()){
             t1 = topic1.getHint().toString();
