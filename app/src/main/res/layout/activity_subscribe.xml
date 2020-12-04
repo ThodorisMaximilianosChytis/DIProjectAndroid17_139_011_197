@@ -10,7 +10,7 @@
             android:id="@+id/textView3"
             android:layout_width="256dp"
             android:layout_height="45dp"
-            android:text="Subscribtion to Topic:"
+            android:text="Subscription to Topic:"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
