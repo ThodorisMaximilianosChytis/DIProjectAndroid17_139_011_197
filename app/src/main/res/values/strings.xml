@@ -2,5 +2,6 @@
     <string name="app_name">DIProjectAndroid17_139_011_197</string>
     <string name="SelectIPheader">Select IP</string>
     <string name="SelectPortheader">Select Port</string>
+    <string name="title_activity_maps">Map</string>
 
 </resources>

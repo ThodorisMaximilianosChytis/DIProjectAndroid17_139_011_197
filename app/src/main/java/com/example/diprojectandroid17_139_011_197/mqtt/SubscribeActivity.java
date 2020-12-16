@@ -26,6 +26,12 @@ public class SubscribeActivity extends AppCompatActivity {
 
         ((TextView)findViewById(R.id.textView4)).setText(Arguments.getString("topic"));
 
+        Intent mapintent = new Intent(this, MapsActivity.class);
+        startActivity(mapintent);
+
+
+
+
         try {
             Subscribe();
         } catch (MqttException e) {
