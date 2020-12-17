@@ -9,20 +9,26 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
     private GoogleMap mMap;
+    private int mapCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        SupportMapFragment mapFragmentreal = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapreal);
+        mapFragmentreal.getMapAsync(this);
+        mapCount=1;
+
+//        SupportMapFragment mapFragmentpred = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mappred);
+//        mapFragmentpred.getMapAsync(onMapReadyCallbackpred());
+//        mapCount++;
     }
 
     /**
@@ -39,8 +45,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng P1 = new LatLng(37.9686200,23.77539 );
+        LatLng P2 = new LatLng(37.9668800,23.77539 );
+        LatLng P3 = new LatLng(37.9686200,23.76476 );
+        LatLng P4 = new LatLng(37.9668800,23.76476 );
+
+        Marker MP1 = mMap.addMarker(new MarkerOptions().position(P1).title("Marker P1").snippet("WAKA"));
+        Marker MP2 =mMap.addMarker(new MarkerOptions().position(P2).title("Marker P2").snippet("MAKA"));
+        Marker MP3 =mMap.addMarker(new MarkerOptions().position(P3).title("Marker P3").snippet("PHO"));
+        Marker MP4 =mMap.addMarker(new MarkerOptions().position(P4).title("Marker P4").snippet("NE"));
+
+//        MP1.showInfoWindow();
+//        MP2.showInfoWindow();
+//        MP3.showInfoWindow();
+//        MP4.showInfoWindow();
+
+
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(P1));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng((P1.latitude + P2.latitude)/2 ,(P1.longitude + P3.longitude)/2 ),15));
+        mMap.animateCamera(CameraUpdateFactory.zoomIn());
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+
+
     }
+
+//    public OnMapReadyCallback onMapReadyCallbackreal(){
+//        return new OnMapReadyCallback() {
+//            @Override
+//            public void onMapReady(GoogleMap googleMap) {
+//                mMap = googleMap;
+//                LatLng vannes = new LatLng(37.9686200,23.77539 );
+//                mMap.addMarker(new MarkerOptions().position(vannes).title("Vannes"));
+//                mMap.moveCamera(CameraUpdateFactory.newLatLng(vannes));
+//            }
+//        };
+//    }
+//
+//    public OnMapReadyCallback onMapReadyCallbackpred(){
+//        return new OnMapReadyCallback() {
+//            @Override
+//            public void onMapReady(GoogleMap googleMap) {
+//                mMap = googleMap;
+//                LatLng bordeaux = new LatLng(44.833328, -0.56667);
+//                mMap.addMarker(new MarkerOptions().position(bordeaux).title("Bordeaux"));
+//                mMap.moveCamera(CameraUpdateFactory.newLatLng(bordeaux));
+//
+//            }
+//        };
+//    }
+
+
+
 }
