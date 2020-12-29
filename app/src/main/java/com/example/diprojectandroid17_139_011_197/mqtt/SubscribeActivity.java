@@ -32,11 +32,11 @@ public class SubscribeActivity extends AppCompatActivity {
 
 
 
-        try {
-            Subscribe();
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Subscribe();
+//        } catch (MqttException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -49,7 +49,8 @@ public class SubscribeActivity extends AppCompatActivity {
 
         client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
 
-        client.setCallback( new SimpleMqttCallback() );
+        client.setCallback( new SimpleMqttCallback());
+
         client.connect();
 
         client.subscribe(Arguments.getString("topic"));

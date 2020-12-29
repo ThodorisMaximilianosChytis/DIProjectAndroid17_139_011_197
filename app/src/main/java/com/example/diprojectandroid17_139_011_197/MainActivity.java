@@ -22,6 +22,7 @@ import android.content.Intent;
 
 
 import android.widget.Button;
+import com.example.diprojectandroid17_139_011_197.mqtt.MapsActivity;
 import com.example.diprojectandroid17_139_011_197.mqtt.PublishActivity;
 import com.example.diprojectandroid17_139_011_197.mqtt.SubscribeActivity;
 import com.example.diprojectandroid17_139_011_197.network.NetworkChangeReceiver;
@@ -70,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void Subscribe() {
 
-        Intent intent = new Intent(this, SubscribeActivity.class);
+        Intent intent = new Intent(this, MapsActivity.class);
 
         String t1 = updateTopic();
 

@@ -1,5 +1,11 @@
 package com.example.diprojectandroid17_139_011_197.mqtt;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.util.Log;
+import android.widget.Toast;
 import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -11,11 +17,51 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
-    private GoogleMap mMap;
-    private int mapCount;
+    private static GoogleMap mMap=null;
+
+    float lat = 0;
+    float lng = 0;
+
+    private Bundle Arguments;
+    private MqttClient client;
+
+    BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getStringExtra("updateMap")!=null){
+//                Log.d("tobad","tobad");
+                Toast.makeText(getApplicationContext(), intent.getStringExtra("messageArrived"), Toast.LENGTH_LONG).show();
+
+                setMarker(lat,lng,"success");
+            }
+        }
+    };
+
+
+
+    public static void setMarker(double Lat, double Long,String info) {
+
+
+        if(mMap!=null){
+
+            LatLng P = new LatLng(Lat,Long );
+
+            Marker MP1 = mMap.addMarker(new MarkerOptions().position(P).title("Marker piou").snippet("pioupioupiou"));
+
+            Log.d("tobad","tobad");
+        }
+        else{
+
+        }
+
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +70,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragmentreal = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapreal);
         mapFragmentreal.getMapAsync(this);
-        mapCount=1;
+
+
+        IntentFilter filter = new IntentFilter("MAP_UPDATE");
+        this.registerReceiver(receiver,filter);
+
+        Intent i = getIntent();
+        Arguments = i.getExtras();
+
 
 //        SupportMapFragment mapFragmentpred = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mappred);
 //        mapFragmentpred.getMapAsync(onMapReadyCallbackpred());
@@ -43,8 +96,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        try {
+            Subscribe();
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
 
-        // Add a marker in Sydney and move the camera
         LatLng P1 = new LatLng(37.9686200,23.77539 );
         LatLng P2 = new LatLng(37.9668800,23.77539 );
         LatLng P3 = new LatLng(37.9686200,23.76476 );
@@ -65,6 +122,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng((P1.latitude + P2.latitude)/2 ,(P1.longitude + P3.longitude)/2 ),15));
         mMap.animateCamera(CameraUpdateFactory.zoomIn());
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+
+
 
 
     }
@@ -94,6 +153,62 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        };
 //    }
 
+
+    private void Subscribe() throws MqttException {
+
+        Toast.makeText(getApplicationContext(), "SUBSCRIBER to " + Arguments.getString("topic"), Toast.LENGTH_LONG).show();
+
+        String clientId = MqttClient.generateClientId();
+
+        client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
+
+        client.setCallback(new MqttCallback() {
+
+
+            @Override
+            public void connectionLost(Throwable cause) {
+
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+//                setMarker(37.9986200,23.80539,"wpalakia");
+//                mMap.addMarker(new MarkerOptions().position(new LatLng(0,0)).title("Marker piou").snippet("pioupioupiou"));
+                String vectormsg = new String(message.getPayload());
+                Log.d("MqttCallback","message arrived!" + new String(message.getPayload()));
+
+                Intent intent = new Intent("MAP_UPDATE");
+                intent.putExtra("updateMap","true");
+                intent.putExtra("messageArrived",vectormsg);
+                sendBroadcast(intent);
+                lat++;
+                lng++;
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
+
+        client.connect();
+
+        client.subscribe(Arguments.getString("topic"));
+
+    }
+
+
+        @Override
+        protected void onDestroy(){
+            super.onDestroy();
+            unregisterReceiver(receiver);
+            try {
+                client.disconnect();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
 
 
 }
