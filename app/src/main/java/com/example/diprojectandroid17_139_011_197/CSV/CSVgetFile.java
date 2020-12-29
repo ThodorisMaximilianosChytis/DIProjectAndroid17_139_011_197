@@ -34,11 +34,12 @@ public class CSVgetFile extends AppCompatActivity {
 
         csvURI=null;
 
+        verifyStoragePermissions();
 
         // Search for file
-        Intent chooseintent = new Intent(Intent.ACTION_GET_CONTENT);
-        chooseintent.setType("text/csv/*");
-        startActivityForResult(chooseintent,1);
+//        Intent chooseintent = new Intent(Intent.ACTION_GET_CONTENT);
+//        chooseintent.setType("text/csv/*");
+//        startActivityForResult(chooseintent,1);
 
 
 
@@ -61,7 +62,8 @@ public class CSVgetFile extends AppCompatActivity {
             }
             if (csvURI!=null){
                 //ask for storage permissions
-                verifyStoragePermissions();
+                Return(1);
+//                verifyStoragePermissions();
             }else{
 //                Log.d("path",csvFilePath);
 
@@ -82,7 +84,10 @@ public class CSVgetFile extends AppCompatActivity {
                     REQUEST_CODE_ASK_PERMISSIONS);
 //            Return();
         }else{
-            Return(1);
+            Intent chooseintent = new Intent(Intent.ACTION_GET_CONTENT);
+            chooseintent.setType("text/csv/*");
+            startActivityForResult(chooseintent,1);
+//            Return(1);
         }
 
 
@@ -108,6 +113,9 @@ public class CSVgetFile extends AppCompatActivity {
             case REQUEST_CODE_ASK_PERMISSIONS:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // Permission Granted
+                    Intent chooseintent = new Intent(Intent.ACTION_GET_CONTENT);
+                    chooseintent.setType("text/csv/*");
+                    startActivityForResult(chooseintent,1);
                     Return(1);
 
                 } else {

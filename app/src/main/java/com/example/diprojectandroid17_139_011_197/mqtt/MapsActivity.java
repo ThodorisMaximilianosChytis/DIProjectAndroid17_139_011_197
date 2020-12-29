@@ -9,6 +9,8 @@ import android.widget.Toast;
 import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.example.diprojectandroid17_139_011_197.CSV.CSVReadlines;
+import com.example.diprojectandroid17_139_011_197.CSV.CSVgetFile;
 import com.example.diprojectandroid17_139_011_197.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,15 +22,19 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.io.IOException;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
     private static GoogleMap mMap=null;
+    private static final int CSVPERMISSION_REQUEST_CODE=3;
 
     float lat = 0;
     float lng = 0;
-
+    int row =2;
     private Bundle Arguments;
     private MqttClient client;
+    private CSVReadlines csvlines;
 
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -36,8 +42,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(intent.getStringExtra("updateMap")!=null){
 //                Log.d("tobad","tobad");
                 Toast.makeText(getApplicationContext(), intent.getStringExtra("messageArrived"), Toast.LENGTH_LONG).show();
-
-                setMarker(lat,lng,"success");
+                setMarker(Double.parseDouble(csvlines.getField(row,3)), Double.parseDouble(csvlines.getField(row,2) ),"success");
+                row++;
             }
         }
     };
@@ -71,9 +77,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragmentreal = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapreal);
         mapFragmentreal.getMapAsync(this);
 
+        Intent intent = new Intent(this, CSVgetFile.class);
+        startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
+
 
         IntentFilter filter = new IntentFilter("MAP_UPDATE");
         this.registerReceiver(receiver,filter);
+
+
 
         Intent i = getIntent();
         Arguments = i.getExtras();
@@ -82,6 +93,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        SupportMapFragment mapFragmentpred = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mappred);
 //        mapFragmentpred.getMapAsync(onMapReadyCallbackpred());
 //        mapCount++;
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case (CSVPERMISSION_REQUEST_CODE) : {
+                if (resultCode == 1) {
+//                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
+
+
+                    try {
+                        Readcsv(data.getStringExtra("csvURI"));
+                    }catch (IOException e){
+                        e.printStackTrace();
+//                        Log.d("path",data.getStringExtra("csvURI"));
+                        Toast.makeText(getApplicationContext(),"Could not open file", Toast.LENGTH_LONG).show();
+                        this.finish();
+                    }
+
+                }else{
+                    Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
+                    this.finish();
+                }
+                break;
+            }
+        }
+    }
+
+    void Readcsv(String csvUriString) throws IOException {
+        csvlines = new CSVReadlines(csvUriString,getApplicationContext());
+
     }
 
     /**

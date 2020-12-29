@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -22,25 +23,31 @@ import android.content.Intent;
 
 
 import android.widget.Button;
+import com.example.diprojectandroid17_139_011_197.CSV.CSVgetFile;
 import com.example.diprojectandroid17_139_011_197.mqtt.MapsActivity;
 import com.example.diprojectandroid17_139_011_197.mqtt.PublishActivity;
 import com.example.diprojectandroid17_139_011_197.mqtt.SubscribeActivity;
 import com.example.diprojectandroid17_139_011_197.network.NetworkChangeReceiver;
 import com.example.diprojectandroid17_139_011_197.network.NetworkSettings;
 import com.example.diprojectandroid17_139_011_197.settings.SettingsActivity;
+import org.eclipse.paho.client.mqttv3.MqttException;
+
+import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {
+
 
     private Button b1, b2, b3, b4;
 
 
 
     private static final int SETTINGS_REQUEST_CODE=2;
+    private static final int CSVPERMISSION_REQUEST_CODE=3;
 
     Bundle Arguments;
     private NetworkChangeReceiver mNetworkReceiver;
-
+    Context context;
 
 
     private String updateTopic(){
@@ -60,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, PublishActivity.class);
 
+
         String t1 = updateTopic();
 
         intent.putExtra("topic", t1);
@@ -72,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
     public void Subscribe() {
 
         Intent intent = new Intent(this, MapsActivity.class);
-
+//        intent.setData(Uri.parse(Arguments.getString("csvURI")));
+//        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         String t1 = updateTopic();
 
         intent.putExtra("topic", t1);
@@ -93,8 +102,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
-            case (SETTINGS_REQUEST_CODE) : {
+        switch (requestCode) {
+            case (SETTINGS_REQUEST_CODE): {
                 if (resultCode == 1) {
 //                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
 
@@ -105,8 +114,18 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             }
+//            case (CSVPERMISSION_REQUEST_CODE): {
+//
+//                if (resultCode ==1){
+//                    Arguments.putString("csvURI",data.getStringExtra("csvURI"));
+//                }else{
+//                    Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
+//                }
+//                break;
+//            }
         }
     }
+
 
     public void exit(){
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -141,11 +160,13 @@ public class MainActivity extends AppCompatActivity {
         mNetworkReceiver = new NetworkChangeReceiver();
         registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
+        context=getApplicationContext();
         //set deafault values
         Arguments = new Bundle();
         Arguments.putString("IP","test.mosquitto.org");
         Arguments.putInt("Port",1883);
         Arguments.putInt("t",-1);
+        Arguments.putString("csvURI","nadas");
 
         //WORK WITH BUTTONS
 
@@ -158,7 +179,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (isNetworkAvailable() == true){
-                    Publish();
+                    if (Arguments.getString("csvURI").equals("nada")){
+                        Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(getApplicationContext(), CSVgetFile.class);
+                        startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
+                    }else {
+                        Publish();
+                    }
                 }else{
                     startActivity(new Intent(getApplicationContext(), NetworkSettings.class) );
                 }
@@ -170,7 +197,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (isNetworkAvailable() == true){
-                    Subscribe();
+                    if (Arguments.getString("csvURI").equals("nada")){
+                        Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(getApplicationContext(), CSVgetFile.class);
+                        startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
+                    }else {
+                        Subscribe();
+                    }
                 }else{          //prompt to enable internet
                     startActivity(new Intent(getApplicationContext(),NetworkSettings.class) );
                 }

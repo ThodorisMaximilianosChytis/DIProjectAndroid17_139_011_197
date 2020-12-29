@@ -75,6 +75,20 @@ public class PublishActivity extends AppCompatActivity {
             Intent intent = new Intent(this, CSVgetFile.class);
             startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
 
+//            try {
+//                Connect(Arguments.getString("csvURI"));
+//            } catch (MqttException e) {
+//                e.printStackTrace();
+//                Toast.makeText(getApplicationContext(),"Could not connect to " + "tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), Toast.LENGTH_LONG).show();
+//                this.finish();
+//            }catch (IOException  e){
+//                e.printStackTrace();
+////                        Log.d("path",data.getStringExtra("csvURI"));
+//                Toast.makeText(getApplicationContext(),"Could not read file", Toast.LENGTH_LONG).show();
+//                this.finish();
+//            }
+            
+            
             //handler for repeating task
             mHandler = new Handler();
 

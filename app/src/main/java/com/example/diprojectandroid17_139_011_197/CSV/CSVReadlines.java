@@ -39,6 +39,8 @@ public class CSVReadlines {
         return csvBody.get(row);
     }
 
+    public String getField(int row, int column){return csvBody.get(row)[column]; }
+
     public int getsize() {
         return  csvBody.size();
     }
