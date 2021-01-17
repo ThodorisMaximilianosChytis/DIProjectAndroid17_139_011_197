@@ -172,7 +172,7 @@ public class PublishActivity extends AppCompatActivity {
 
         csvlines = new CSVReadlines(csvUriString,getApplicationContext());
 
-        row=1;
+        row=2;
 
         startRepeatingTask();
 
@@ -191,7 +191,7 @@ public class PublishActivity extends AppCompatActivity {
             String [] line = csvlines.getLine(row);
             String sline=line[0];
             for (int i = 1; i < line.length ; i++){
-                sline =  sline + "|" + line[i];
+                sline =  sline + "@" + line[i];
             }
 
 
