@@ -31,13 +31,17 @@ import static android.graphics.Color.*;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
+    private static final int FILE_OFFSET = 2;
     private static GoogleMap mMap=null;
     private static final int CSVPERMISSION_REQUEST_CODE=3;
 
     private LatLng prevRealPosition = null;
     private LatLng lastRealPosition = null;
 
+    private LatLng prevPredPosition = null;
+
     Marker realMarker = null;
+    Marker predMarker = null;
 
     int row =2;
     private Bundle Arguments;
@@ -56,17 +60,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getStringExtra("updateMap")!=null && row<csvlines.getsize()){
-//                Log.d("tobad","tobad");
+            if(intent.getStringExtra("updateMap")!=null && intent.getStringExtra("updateMap").equals("true") ){
+
                 Toast.makeText(getApplicationContext(), intent.getStringExtra("messageArrived"), Toast.LENGTH_LONG).show();
-//                setMarker(Double.parseDouble(csvlines.getField(row,3)), Double.parseDouble(csvlines.getField(row,2) ),"success");
-                //updateMap(Double.parseDouble(csvlines.getField(row,3)),Double.parseDouble(csvlines.getField(row,2) ),5);
+                String[] predicted = intent.getStringExtra("messageArrived").split("@", 5);
+                // 0:predtimestep 1:predlong 2:predlat 3:predRSSI 4:predThroughput
+
+                int predtimestep = (int) Double.parseDouble(predicted[0]);
+
+                double predlong = Double.parseDouble(predicted[1]);
+                double predlat = Double.parseDouble(predicted[2]);
+                double predRSSI = Double.parseDouble(predicted[3]);
+                double predThroughput = Double.parseDouble(predicted[4]);
+
+                updateRoutereal(Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET,3)) ,Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET,2)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET) ,6)));
+                updateRoutepred( predlat, predlong, predRSSI );
+
+//                updateMap(Double.parseDouble(csvlines.getField(row,3)),Double.parseDouble(csvlines.getField(row,2) ),5);
                 //row++;
 
             }
         }
     };
-
+    private LatLng lastPredPosition;
 
 
     public static void setMarker(double Lat, double Long,String info) {
@@ -80,13 +96,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             Log.d("tobad","tobad");
         }
-        else{
 
-        }
 
 
     }
-    public void updateMap(double lat,double lon,double rssi) {
+    public void updateRoutereal(double lat,double lon,double rssi) {
         LatLng point = new LatLng(lat, lon);
             if (prevRealPosition == null)
                 prevRealPosition = point;
@@ -94,8 +108,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 try {
                     PolylineOptions lineOptions = new PolylineOptions();
                     lineOptions.add(point, prevRealPosition);
-                    lineOptions.color(CYAN);
-                    lineOptions.width(5);
+                    lineOptions.color(RED);
+                    lineOptions.width(2);
                     lineOptions.geodesic(false);
                     mMap.addPolyline(lineOptions);
                     lastRealPosition = new LatLng(point.latitude, point.longitude);
@@ -109,6 +123,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     e.printStackTrace();
                 }
             }
+    }
+
+    public void updateRoutepred(double lat,double lon,double rssi) {
+        LatLng point = new LatLng(lat, lon);
+        if (prevPredPosition == null)
+            prevPredPosition = point;
+        else {
+            try {
+                PolylineOptions lineOptions = new PolylineOptions();
+                lineOptions.add(point, prevPredPosition);
+                lineOptions.color(BLUE);
+                lineOptions.width(2);
+                lineOptions.geodesic(false);
+                mMap.addPolyline(lineOptions);
+                lastPredPosition = new LatLng(point.latitude, point.longitude);
+                if (predMarker != null)
+                    predMarker.remove();
+
+                predMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition));
+
+                prevPredPosition = point;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -150,6 +189,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Arguments = i.getExtras();
 
         ((TextView)findViewById(R.id.textView2)).setText(Arguments.getString("topic"));
+        //Arguments.putString("topic",Arguments.getString("topic") + "/a2e");
+
+
 
         mHandler = new Handler();
 
@@ -255,37 +297,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-//    public OnMapReadyCallback onMapReadyCallbackreal(){
-//        return new OnMapReadyCallback() {
-//            @Override
-//            public void onMapReady(GoogleMap googleMap) {
-//                mMap = googleMap;
-//                LatLng vannes = new LatLng(37.9686200,23.77539 );
-//                mMap.addMarker(new MarkerOptions().position(vannes).title("Vannes"));
-//                mMap.moveCamera(CameraUpdateFactory.newLatLng(vannes));
-//            }
-//        };
-//    }
-//
-//    public OnMapReadyCallback onMapReadyCallbackpred(){
-//        return new OnMapReadyCallback() {
-//            @Override
-//            public void onMapReady(GoogleMap googleMap) {
-//                mMap = googleMap;
-//                LatLng bordeaux = new LatLng(44.833328, -0.56667);
-//                mMap.addMarker(new MarkerOptions().position(bordeaux).title("Bordeaux"));
-//                mMap.moveCamera(CameraUpdateFactory.newLatLng(bordeaux));
-//
-//            }
-//        };
-//    }
-
-
     private void Subscribe() throws MqttException {
 
         Toast.makeText(getApplicationContext(), "SUBSCRIBER to " + Arguments.getString("topic"), Toast.LENGTH_LONG).show();
 
-        String clientId = MqttClient.generateClientId();
+        final String clientId = MqttClient.generateClientId();
 
         clientsub = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
 
@@ -303,12 +319,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                setMarker(37.9986200,23.80539,"wpalakia");
 //                mMap.addMarker(new MarkerOptions().position(new LatLng(0,0)).title("Marker piou").snippet("pioupioupiou"));
                 String vectormsg = new String(message.getPayload());
-                Log.d("MqttCallback","message arrived!" + new String(message.getPayload()));
+                Log.d("MqttCallback", "message arrived!" + new String(message.getPayload()) );
 
-                Intent intent = new Intent("MAP_UPDATE");
-                intent.putExtra("updateMap","true");
-                intent.putExtra("messageArrived",vectormsg);
-                sendBroadcast(intent);
+                if (topic.equals(Arguments.getString("topic" ) + "/e2a") ){
+                    Intent intent = new Intent("MAP_UPDATE");
+                    intent.putExtra("updateMap", "true");
+                    intent.putExtra("messageArrived", vectormsg);
+                    sendBroadcast(intent);
+                }
 
             }
 
@@ -320,7 +338,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         clientsub.connect();
 
-        clientsub.subscribe(Arguments.getString("topic"));
+        clientsub.subscribe(Arguments.getString("topic") + "/e2a");
 
     }
 
@@ -406,6 +424,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void CancelSend(String message) throws MqttException {
 
+
         stopRepeatingTask();
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_LONG).show();
         //Disconnect();
@@ -471,9 +490,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mess = new MqttMessage();
 
+
         csvlines = new CSVReadlines(csvUriString,getApplicationContext());
 
-        row=2;
+        row=FILE_OFFSET;
 
         startRepeatingTask();
 
@@ -501,7 +521,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
             try {
-                clientsub.publish(Arguments.getString("topic"),mess);
+                clientsub.publish(Arguments.getString("topic") + "/a2e",mess);
             } catch (MqttException e) {
                 e.printStackTrace();
             }
