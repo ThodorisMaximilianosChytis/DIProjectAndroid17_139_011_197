@@ -4,46 +4,65 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
 
 import com.example.diprojectandroid17_139_011_197.CSV.CSVReadlines;
 import com.example.diprojectandroid17_139_011_197.CSV.CSVgetFile;
+import com.example.diprojectandroid17_139_011_197.MainActivity;
 import com.example.diprojectandroid17_139_011_197.R;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.*;
+import com.google.android.gms.maps.model.*;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.IOException;
+
+import static android.graphics.Color.*;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback{
 
     private static GoogleMap mMap=null;
     private static final int CSVPERMISSION_REQUEST_CODE=3;
 
-    float lat = 0;
-    float lng = 0;
+    private LatLng prevRealPosition = null;
+    private LatLng lastRealPosition = null;
+
+    Marker realMarker = null;
+
     int row =2;
     private Bundle Arguments;
-    private MqttClient client;
+    private MqttClient clientsub;
     private CSVReadlines csvlines;
+
+    private Button bs;
+    //      T = 1s
+    private int mInterval = 1000;
+    //      Handler for repeated send
+    private Handler mHandler;
+
+    MqttClient clientpub;
+    MqttMessage mess;
 
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getStringExtra("updateMap")!=null){
+            if(intent.getStringExtra("updateMap")!=null && row<csvlines.getsize()){
 //                Log.d("tobad","tobad");
                 Toast.makeText(getApplicationContext(), intent.getStringExtra("messageArrived"), Toast.LENGTH_LONG).show();
-                setMarker(Double.parseDouble(csvlines.getField(row,3)), Double.parseDouble(csvlines.getField(row,2) ),"success");
-                row++;
+//                setMarker(Double.parseDouble(csvlines.getField(row,3)), Double.parseDouble(csvlines.getField(row,2) ),"success");
+                //updateMap(Double.parseDouble(csvlines.getField(row,3)),Double.parseDouble(csvlines.getField(row,2) ),5);
+                //row++;
+
             }
         }
     };
@@ -67,18 +86,59 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
+    public void updateMap(double lat,double lon,double rssi) {
+        LatLng point = new LatLng(lat, lon);
+            if (prevRealPosition == null)
+                prevRealPosition = point;
+            else {
+                try {
+                    PolylineOptions lineOptions = new PolylineOptions();
+                    lineOptions.add(point, prevRealPosition);
+                    lineOptions.color(CYAN);
+                    lineOptions.width(5);
+                    lineOptions.geodesic(false);
+                    mMap.addPolyline(lineOptions);
+                    lastRealPosition = new LatLng(point.latitude, point.longitude);
+                    if (realMarker != null)
+                        realMarker.remove();
 
+                    realMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition));
+
+                    prevRealPosition = point;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+
+
+
         SupportMapFragment mapFragmentreal = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapreal);
         mapFragmentreal.getMapAsync(this);
 
+        bs = findViewById(R.id.stop);
+        bs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    CancelSend("You cancelled the trasmission");
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
         Intent intent = new Intent(this, CSVgetFile.class);
         startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
+
+
 
 
         IntentFilter filter = new IntentFilter("MAP_UPDATE");
@@ -89,6 +149,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent i = getIntent();
         Arguments = i.getExtras();
 
+        ((TextView)findViewById(R.id.textView2)).setText(Arguments.getString("topic"));
+
+        mHandler = new Handler();
 
 //        SupportMapFragment mapFragmentpred = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mappred);
 //        mapFragmentpred.getMapAsync(onMapReadyCallbackpred());
@@ -96,32 +159,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
-            case (CSVPERMISSION_REQUEST_CODE) : {
-                if (resultCode == 1) {
-//                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
-
-
-                    try {
-                        Readcsv(data.getStringExtra("csvURI"));
-                    }catch (IOException e){
-                        e.printStackTrace();
-//                        Log.d("path",data.getStringExtra("csvURI"));
-                        Toast.makeText(getApplicationContext(),"Could not open file", Toast.LENGTH_LONG).show();
-                        this.finish();
-                    }
-
-                }else{
-                    Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
-                    this.finish();
-                }
-                break;
-            }
-        }
-    }
+//    @Override
+//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        switch(requestCode) {
+//            case (CSVPERMISSION_REQUEST_CODE) : {
+//                if (resultCode == 1) {
+////                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
+//
+//
+//                    try {
+//                        Readcsv(data.getStringExtra("csvURI"));
+//                    }catch (IOException e){
+//                        e.printStackTrace();
+////                        Log.d("path",data.getStringExtra("csvURI"));
+//                        Toast.makeText(getApplicationContext(),"Could not open file", Toast.LENGTH_LONG).show();
+//                        this.finish();
+//                    }
+//
+//                }else{
+//                    Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
+//                    this.finish();
+//                }
+//                break;
+//            }
+//        }
+//    }
 
     void Readcsv(String csvUriString) throws IOException {
         csvlines = new CSVReadlines(csvUriString,getApplicationContext());
@@ -146,15 +209,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
 
-        LatLng P1 = new LatLng(37.9686200,23.77539 );
-        LatLng P2 = new LatLng(37.9668800,23.77539 );
-        LatLng P3 = new LatLng(37.9686200,23.76476 );
-        LatLng P4 = new LatLng(37.9668800,23.76476 );
 
-        Marker MP1 = mMap.addMarker(new MarkerOptions().position(P1).title("Marker P1").snippet("WAKA"));
-        Marker MP2 =mMap.addMarker(new MarkerOptions().position(P2).title("Marker P2").snippet("MAKA"));
-        Marker MP3 =mMap.addMarker(new MarkerOptions().position(P3).title("Marker P3").snippet("PHO"));
-        Marker MP4 =mMap.addMarker(new MarkerOptions().position(P4).title("Marker P4").snippet("NE"));
+        LatLng Maxlat_Maxlong = new LatLng(37.9686200,23.77539 );
+        LatLng Minlat_Maxlong = new LatLng(37.9668800,23.77539 );
+        LatLng Maxlat_Minlong = new LatLng(37.9686200,23.76476 );
+        LatLng Minlat_Minlong = new LatLng(37.9668800,23.76476 );
+
+//        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+
+//        bounds.include(Maxlat_Maxlong);
+//        bounds.include(Minlat_Maxlong);
+//        bounds.include(Maxlat_Minlong);
+//        bounds.include(Minlat_Minlong);
+//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds.build(), 18);
+//        mMap.animateCamera(cu);
+
+//        Marker MP1 = mMap.addMarker(new MarkerOptions().position(Maxlat_Maxlong).title("Maxlat_Maxlong").snippet("WAKA"));
+//        Marker MP2 =mMap.addMarker(new MarkerOptions().position(Minlat_Maxlong).title("Minlat_Maxlong").snippet("MAKA"));
+//        Marker MP3 =mMap.addMarker(new MarkerOptions().position(Maxlat_Minlong).title("Maxlat_Minlong").snippet("PHO"));
+//        Marker MP4 =mMap.addMarker(new MarkerOptions().position(Minlat_Minlong).title("Minlat_Minlong").snippet("NE"));
 
 //        MP1.showInfoWindow();
 //        MP2.showInfoWindow();
@@ -162,8 +235,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        MP4.showInfoWindow();
 
 
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(P1));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng((P1.latitude + P2.latitude)/2 ,(P1.longitude + P3.longitude)/2 ),15));
+        mMap.addPolyline(new PolylineOptions()
+                .color(BLACK)
+                .width(2)
+                .geodesic(false)
+                .add(   Maxlat_Minlong,
+                        Maxlat_Maxlong,
+                        Minlat_Maxlong,
+                        Minlat_Minlong,
+                        Maxlat_Minlong));
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(Maxlat_Maxlong));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng((Maxlat_Maxlong.latitude + Minlat_Maxlong.latitude)/2 ,(Maxlat_Maxlong.longitude + Minlat_Minlong.longitude)/2 ),15));
         mMap.animateCamera(CameraUpdateFactory.zoomIn());
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
 
@@ -204,9 +287,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         String clientId = MqttClient.generateClientId();
 
-        client = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
+        clientsub = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
 
-        client.setCallback(new MqttCallback() {
+        clientsub.setCallback(new MqttCallback() {
 
 
             @Override
@@ -226,8 +309,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 intent.putExtra("updateMap","true");
                 intent.putExtra("messageArrived",vectormsg);
                 sendBroadcast(intent);
-                lat++;
-                lng++;
+
             }
 
             @Override
@@ -236,9 +318,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        client.connect();
+        clientsub.connect();
 
-        client.subscribe(Arguments.getString("topic"));
+        clientsub.subscribe(Arguments.getString("topic"));
 
     }
 
@@ -247,12 +329,227 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onDestroy(){
             super.onDestroy();
             unregisterReceiver(receiver);
+            stopRepeatingTask();
             try {
-                client.disconnect();
+                clientsub.disconnect();
+                clientpub.disconnect();
             } catch (MqttException e) {
                 e.printStackTrace();
             }
         }
 
+//    private static final int CSVPERMISSION_REQUEST_CODE=2;
+//    private Bundle Arguments;
+//    private Button bs;
+//    //      T = 1s
+//    private int mInterval = 1000;
+//    //      Handler for repeated send
+//    private Handler mHandler;
+//
+//    MqttClient client;
+//    MqttMessage mess;
+//    CSVReadlines csvlines;
+//    int row;
+//
+//
+//
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//        setContentView(R.layout.activity_publish);
+//
+//
+//
+//        bs = findViewById(R.id.stop);
+//        bs.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                try {
+//                    CancelSend("You cancelled the trasmission");
+//                } catch (MqttException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//
+//
+//        Intent i = getIntent();
+//        Arguments = i.getExtras();
+//
+////            Log.d("checktopic", Arguments.getString("IP"));
+//
+////            Log.d("checkip",Arguments.getString("IP"));
+////            Log.d("checktopic",Arguments.getString("topic1"));
+//
+//        ((TextView)findViewById(R.id.textView2)).setText(Arguments.getString("topic"));
+//
+//        //get file path
+//        Intent intent = new Intent(this, CSVgetFile.class);
+//        startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
+//
+
+//
+//
+//        handler for repeating task
+//        mHandler = new Handler();
+//
+//
+//
+//    }
+
+
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        stopRepeatingTask();
+//    }
+
+    private void CancelSend(String message) throws MqttException {
+
+        stopRepeatingTask();
+        Toast.makeText(getApplicationContext(),message, Toast.LENGTH_LONG).show();
+        //Disconnect();
+        this.finish();
+
+
+    }
+
+    //result from csvgetfile
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case (CSVPERMISSION_REQUEST_CODE) : {
+                if (resultCode == 1) {
+//                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
+
+
+                    try {
+                        Connect(data.getStringExtra("csvURI"));
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(),"Could not connect to " + "tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), Toast.LENGTH_LONG).show();
+                        this.finish();
+                    }catch (IOException  e){
+                        e.printStackTrace();
+//                        Log.d("path",data.getStringExtra("csvURI"));
+                        Toast.makeText(getApplicationContext(),"Could not open file", Toast.LENGTH_LONG).show();
+                        this.finish();
+                    }
+
+                }else{
+                    Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
+                    this.finish();
+                }
+                break;
+            }
+        }
+    }
+
+
+    private void Connect(String csvUriString) throws IOException, MqttException {
+//        String IP="test.mosquitto.org";
+//        String Port="1883";
+
+//            Log.d("checkip",Arguments.getString("IP"));
+//            Log.d("checktopic",Arguments.getString("topic"));
+
+        String clientId= MqttClient.generateClientId();
+
+
+        try {
+            clientpub = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+
+        clientpub.setCallback(new SimpleMqttCallback());
+
+        clientpub.connect();
+
+
+        mess = new MqttMessage();
+
+        csvlines = new CSVReadlines(csvUriString,getApplicationContext());
+
+        row=2;
+
+        startRepeatingTask();
+
+
+    }
+
+
+
+
+    //repeated task
+    Runnable mRepeatSend = new Runnable() {
+        @Override
+        public void run() {
+
+
+            String [] line = csvlines.getLine(row);
+            String sline=line[0];
+            for (int i = 1; i < line.length ; i++){
+                sline =  sline + "@" + line[i];
+            }
+
+
+
+            mess.setPayload(sline.getBytes());
+
+
+            try {
+                clientsub.publish(Arguments.getString("topic"),mess);
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                updaterow();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+
+
+            mHandler.postDelayed(mRepeatSend, mInterval);
+        }
+    };
+
+
+    private void updaterow() throws MqttException {
+        row++;
+        if(isNetworkAvailable()==false){
+            startActivity(new Intent(getApplicationContext(), MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        }else if ( row==csvlines.getsize()) {
+            CancelSend("EndOFile");
+        }else if(Arguments.getInt("t")+1==row ){
+            CancelSend("TimeOut");
+        }
+    }
+
+    void startRepeatingTask() {
+        mRepeatSend.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mRepeatSend);
+    }
+
+    private void Disconnect() throws MqttException {
+        clientsub.disconnect();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        if (activeNetworkInfo != null && activeNetworkInfo.isConnected()){
+            return true;
+        }else{
+            return false;
+        }
+    }
 
 }
