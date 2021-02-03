@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
@@ -43,7 +42,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Marker realMarker = null;
     Marker predMarker = null;
 
-    int row =2;
+    int row =FILE_OFFSET;
+    int follow_vehicle = 6;
     private Bundle Arguments;
     private MqttClient clientsub;
     private CSVReadlines csvlines;
@@ -62,22 +62,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         public void onReceive(Context context, Intent intent) {
             if(intent.getStringExtra("updateMap")!=null && intent.getStringExtra("updateMap").equals("true") ){
 
-                Toast.makeText(getApplicationContext(), intent.getStringExtra("messageArrived"), Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), intent.getStringExtra("messageArrived"), Toast.LENGTH_LONG).show();
                 String[] predicted = intent.getStringExtra("messageArrived").split("@", 5);
                 // 0:predtimestep 1:predlong 2:predlat 3:predRSSI 4:predThroughput
 
                 int predtimestep = (int) Double.parseDouble(predicted[0]);
+
+                Toast.makeText(getApplicationContext(), predtimestep + "==" + csvlines.getField(predtimestep + FILE_OFFSET -1,0), Toast.LENGTH_LONG).show();
 
                 double predlong = Double.parseDouble(predicted[1]);
                 double predlat = Double.parseDouble(predicted[2]);
                 double predRSSI = Double.parseDouble(predicted[3]);
                 double predThroughput = Double.parseDouble(predicted[4]);
 
-                updateRoutereal(Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET,3)) ,Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET,2)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET) ,6)));
-                updateRoutepred( predlat, predlong, predRSSI );
+                updateRoutereal(Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1 ,3)) ,Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1,2)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,6)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,7)));
+                updateRoutepred( predlat, predlong, predRSSI, predThroughput );
 
-//                updateMap(Double.parseDouble(csvlines.getField(row,3)),Double.parseDouble(csvlines.getField(row,2) ),5);
-                //row++;
+//                updateInfoWindow(predRSSI,predThroughput,Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,6)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,7)));
 
             }
         }
@@ -100,7 +101,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
-    public void updateRoutereal(double lat,double lon,double rssi) {
+
+    private void updateInfoWindow(double rssipre, double throughputpre, double rssireal, double throughputreal){
+        realMarker.setTitle("Vehicle Info");
+        realMarker.setSnippet("Predicted-> RSSI:" + rssipre + "THROUGPUT:" + throughputpre + "\n" +
+                "Real-> RSSI:" + rssireal + "THROUGPUT:" + throughputreal);
+        realMarker.showInfoWindow();
+    }
+
+    public void updateRoutereal(double lat,double lon,double rssi, double throughput) {
         LatLng point = new LatLng(lat, lon);
             if (prevRealPosition == null)
                 prevRealPosition = point;
@@ -116,7 +125,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (realMarker != null)
                         realMarker.remove();
 
-                    realMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition));
+                    realMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition)
+                            .title("Real Vehicle")
+                            .snippet("RSSI: "+ rssi + "Throughput: "+ throughput));
+
+                    realMarker.showInfoWindow();
 
                     prevRealPosition = point;
                 } catch (Exception e) {
@@ -125,12 +138,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
     }
 
-    public void updateRoutepred(double lat,double lon,double rssi) {
+
+    public void updateRoutepred(double lat,double lon,double rssi, double throughput) {
         LatLng point = new LatLng(lat, lon);
-        if (prevPredPosition == null)
+        if (follow_vehicle==6) {
+            follow_vehicle = 0;
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 19));
+        }
+        follow_vehicle++;
+
+//        mMap.animateCamera(CameraUpdateFactory.zoomTo(18), 700, null);
+        if (prevPredPosition == null) {
             prevPredPosition = point;
+        }
         else {
             try {
+
                 PolylineOptions lineOptions = new PolylineOptions();
                 lineOptions.add(point, prevPredPosition);
                 lineOptions.color(BLUE);
@@ -138,10 +161,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 lineOptions.geodesic(false);
                 mMap.addPolyline(lineOptions);
                 lastPredPosition = new LatLng(point.latitude, point.longitude);
+
                 if (predMarker != null)
                     predMarker.remove();
 
-                predMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition));
+
+                predMarker = mMap.addMarker(new MarkerOptions().position(lastPredPosition)
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                        .title("Predicted Vehicle")
+                        .snippet("RSSI: "+ rssi + "Throughput: "+ throughput)
+                        .rotation(180)
+                        .infoWindowAnchor(1,1)
+                );
+
+                predMarker.showInfoWindow();
+
 
                 prevPredPosition = point;
             } catch (Exception e) {
@@ -290,7 +324,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLng(Maxlat_Maxlong));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng((Maxlat_Maxlong.latitude + Minlat_Maxlong.latitude)/2 ,(Maxlat_Maxlong.longitude + Minlat_Minlong.longitude)/2 ),15));
         mMap.animateCamera(CameraUpdateFactory.zoomIn());
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
 
 
 

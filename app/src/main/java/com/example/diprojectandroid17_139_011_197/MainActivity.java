@@ -63,19 +63,6 @@ public class MainActivity extends AppCompatActivity {
         return t1;
     }
 
-    public void Publish() {
-
-        Intent intent = new Intent(this, PublishActivity.class);
-
-
-        String t1 = updateTopic();
-
-        intent.putExtra("topic", t1);
-        intent.putExtras(Arguments);
-
-        startActivity(intent);
-
-    }
 
     public void Subscribe() {
 
@@ -170,27 +157,11 @@ public class MainActivity extends AppCompatActivity {
 
         //WORK WITH BUTTONS
 
-        b1 = findViewById(R.id.pub); //publish
         b2 = findViewById(R.id.sub); //subscribe
         b3 = findViewById(R.id.sett); //settings
         b4 = findViewById(R.id.exit); //exit
 
-        b1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isNetworkAvailable() == true){
-                    if (Arguments.getString("csvURI").equals("nada")){
-                        Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(getApplicationContext(), CSVgetFile.class);
-                        startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
-                    }else {
-                        Publish();
-                    }
-                }else{
-                    startActivity(new Intent(getApplicationContext(), NetworkSettings.class) );
-                }
-            }
-        });
+
 
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
