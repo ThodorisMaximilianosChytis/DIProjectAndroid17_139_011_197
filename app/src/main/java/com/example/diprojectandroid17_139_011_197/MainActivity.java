@@ -168,13 +168,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (isNetworkAvailable() == true){
-                    if (Arguments.getString("csvURI").equals("nada")){
-                        Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(getApplicationContext(), CSVgetFile.class);
-                        startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
-                    }else {
                         Subscribe();
-                    }
                 }else{          //prompt to enable internet
                     startActivity(new Intent(getApplicationContext(),NetworkSettings.class) );
                 }

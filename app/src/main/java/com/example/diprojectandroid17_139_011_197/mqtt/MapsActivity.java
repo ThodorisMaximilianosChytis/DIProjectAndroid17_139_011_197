@@ -38,6 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng lastRealPosition = null;
 
     private LatLng prevPredPosition = null;
+    private LatLng lastPredPosition = null;
 
     Marker realMarker = null;
     Marker predMarker = null;
@@ -78,12 +79,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 updateRoutereal(Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1 ,3)) ,Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1,2)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,6)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,7)));
                 updateRoutepred( predlat, predlong, predRSSI, predThroughput );
 
-//                updateInfoWindow(predRSSI,predThroughput,Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,6)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,7)));
+                updateInfoWindow(predRSSI,predThroughput,Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,6)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,7)));
 
             }
         }
     };
-    private LatLng lastPredPosition;
+
 
 
     public static void setMarker(double Lat, double Long,String info) {
@@ -103,10 +104,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void updateInfoWindow(double rssipre, double throughputpre, double rssireal, double throughputreal){
-        realMarker.setTitle("Vehicle Info");
-        realMarker.setSnippet("Predicted-> RSSI:" + rssipre + "THROUGPUT:" + throughputpre + "\n" +
-                "Real-> RSSI:" + rssireal + "THROUGPUT:" + throughputreal);
-        realMarker.showInfoWindow();
+        if (realMarker!=null) {
+            mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(MapsActivity.this));
+
+            realMarker.setTitle("Vehicle Info");
+            realMarker.setSnippet("Predicted--> RSSI:  " + rssipre + "___THROUGPUT:   " + throughputpre +
+                    "\nReal--> RSSI   :" + rssireal + "___THROUGPUT:   " + throughputreal);
+
+            realMarker.showInfoWindow();
+
+
+
+
+        }
     }
 
     public void updateRoutereal(double lat,double lon,double rssi, double throughput) {
@@ -126,10 +136,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         realMarker.remove();
 
                     realMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition)
-                            .title("Real Vehicle")
-                            .snippet("RSSI: "+ rssi + "Throughput: "+ throughput));
+//                            .title("Real Vehicle")
+//                            .snippet("RSSI: "+ rssi + "Throughput: "+ throughput)
+                    );
 
-                    realMarker.showInfoWindow();
+//                    realMarker.showInfoWindow();
 
                     prevRealPosition = point;
                 } catch (Exception e) {
@@ -168,13 +179,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 predMarker = mMap.addMarker(new MarkerOptions().position(lastPredPosition)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-                        .title("Predicted Vehicle")
-                        .snippet("RSSI: "+ rssi + "Throughput: "+ throughput)
+//                        .title("Predicted Vehicle")
+//                        .snippet("RSSI: "+ rssi + "Throughput: "+ throughput)
                         .rotation(180)
-                        .infoWindowAnchor(1,1)
+//                        .infoWindowAnchor(1,1)
                 );
 
-                predMarker.showInfoWindow();
+//                predMarker.showInfoWindow();
 
 
                 prevPredPosition = point;
@@ -382,12 +393,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             super.onDestroy();
             unregisterReceiver(receiver);
             stopRepeatingTask();
-            try {
-                clientsub.disconnect();
-                clientpub.disconnect();
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
+
         }
 
 //    private static final int CSVPERMISSION_REQUEST_CODE=2;
@@ -592,7 +598,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void Disconnect() throws MqttException {
-        clientsub.disconnect();
+        if (clientsub!=null)
+            clientsub.disconnect();
+        if (clientpub!=null)
+            clientpub.disconnect();
+
     }
 
     private boolean isNetworkAvailable() {
