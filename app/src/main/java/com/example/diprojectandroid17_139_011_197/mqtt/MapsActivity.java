@@ -25,6 +25,7 @@ import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static android.graphics.Color.*;
 
@@ -44,7 +45,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Marker predMarker = null;
 
     int row =FILE_OFFSET;
+
     int follow_vehicle = 6;
+
     private Bundle Arguments;
     private MqttClient clientsub;
     private CSVReadlines csvlines;
@@ -58,6 +61,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     MqttClient clientpub;
     MqttMessage mess;
 
+    double DistanceSum=0.0;
+
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -69,17 +74,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 int predtimestep = (int) Double.parseDouble(predicted[0]);
 
-                Toast.makeText(getApplicationContext(), predtimestep + "==" + csvlines.getField(predtimestep + FILE_OFFSET -1,0), Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), predtimestep + "==" + csvlines.getField(predtimestep + FILE_OFFSET -1,0), Toast.LENGTH_LONG).show();
 
                 double predlong = Double.parseDouble(predicted[1]);
                 double predlat = Double.parseDouble(predicted[2]);
                 double predRSSI = Double.parseDouble(predicted[3]);
                 double predThroughput = Double.parseDouble(predicted[4]);
 
-                updateRoutereal(Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1 ,3)) ,Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1,2)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,6)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,7)));
-                updateRoutepred( predlat, predlong, predRSSI, predThroughput );
+                double realong= Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1 ,2));
+                double reallat=  Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1 ,3));
+                double realRSSI=   Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1 ,6));
+                double realThroughput= Double.parseDouble(csvlines.getField(predtimestep + FILE_OFFSET -1 ,7));
 
-                updateInfoWindow(predRSSI,predThroughput,Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,6)),Double.parseDouble(csvlines.getField((predtimestep + FILE_OFFSET -1) ,7)));
+
+//                Toast.makeText(getApplicationContext(), String.valueOf(DistanceSum) , Toast.LENGTH_LONG).show();
+
+
+                updateRoutereal(reallat ,realong,realRSSI,realThroughput);
+                updateRoutepred( predlat, predlong, predRSSI, predThroughput );
+                updateInfoWindow(predRSSI,predThroughput,realRSSI,realThroughput);
 
             }
         }
@@ -103,7 +116,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    private void updateInfoWindow(double rssipre, double throughputpre, double rssireal, double throughputreal){
+    private void updateInfoWindow(double rssipre, double throughputpre, double rssireal, double throughputreal  ){
         if (realMarker!=null) {
             mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(MapsActivity.this));
 
@@ -464,10 +477,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void CancelSend(String message) throws MqttException {
 
+        String stop = "@SendingStops@";
+        mess.setPayload(stop.getBytes());
+        clientsub.publish(Arguments.getString("topic") + "/a2e",mess);
 
         stopRepeatingTask();
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_LONG).show();
-        //Disconnect();
+        Disconnect();
         this.finish();
 
 
