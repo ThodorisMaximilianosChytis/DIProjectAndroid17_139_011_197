@@ -247,49 +247,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Arguments = i.getExtras();
 
         ((TextView)findViewById(R.id.textView2)).setText(Arguments.getString("topic"));
-        //Arguments.putString("topic",Arguments.getString("topic") + "/a2e");
 
 
 
         mHandler = new Handler();
 
-//        SupportMapFragment mapFragmentpred = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mappred);
-//        mapFragmentpred.getMapAsync(onMapReadyCallbackpred());
-//        mapCount++;
-    }
-
-
-//    @Override
-//    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        switch(requestCode) {
-//            case (CSVPERMISSION_REQUEST_CODE) : {
-//                if (resultCode == 1) {
-////                    Toast.makeText(getApplicationContext(), Arguments.getString("IP"), Toast.LENGTH_LONG).show();
-//
-//
-//                    try {
-//                        Readcsv(data.getStringExtra("csvURI"));
-//                    }catch (IOException e){
-//                        e.printStackTrace();
-////                        Log.d("path",data.getStringExtra("csvURI"));
-//                        Toast.makeText(getApplicationContext(),"Could not open file", Toast.LENGTH_LONG).show();
-//                        this.finish();
-//                    }
-//
-//                }else{
-//                    Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
-//                    this.finish();
-//                }
-//                break;
-//            }
-//        }
-//    }
-
-    void Readcsv(String csvUriString) throws IOException {
-        csvlines = new CSVReadlines(csvUriString,getApplicationContext());
 
     }
+
+
 
     /**
      * Manipulates the map once available.
@@ -309,31 +275,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
 
-
         LatLng Maxlat_Maxlong = new LatLng(37.9686200,23.77539 );
         LatLng Minlat_Maxlong = new LatLng(37.9668800,23.77539 );
         LatLng Maxlat_Minlong = new LatLng(37.9686200,23.76476 );
         LatLng Minlat_Minlong = new LatLng(37.9668800,23.76476 );
-
-//        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-
-//        bounds.include(Maxlat_Maxlong);
-//        bounds.include(Minlat_Maxlong);
-//        bounds.include(Maxlat_Minlong);
-//        bounds.include(Minlat_Minlong);
-//        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds.build(), 18);
-//        mMap.animateCamera(cu);
-
-//        Marker MP1 = mMap.addMarker(new MarkerOptions().position(Maxlat_Maxlong).title("Maxlat_Maxlong").snippet("WAKA"));
-//        Marker MP2 =mMap.addMarker(new MarkerOptions().position(Minlat_Maxlong).title("Minlat_Maxlong").snippet("MAKA"));
-//        Marker MP3 =mMap.addMarker(new MarkerOptions().position(Maxlat_Minlong).title("Maxlat_Minlong").snippet("PHO"));
-//        Marker MP4 =mMap.addMarker(new MarkerOptions().position(Minlat_Minlong).title("Minlat_Minlong").snippet("NE"));
-
-//        MP1.showInfoWindow();
-//        MP2.showInfoWindow();
-//        MP3.showInfoWindow();
-//        MP4.showInfoWindow();
-
 
         mMap.addPolyline(new PolylineOptions()
                 .color(BLACK)
@@ -409,71 +354,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
 
-//    private static final int CSVPERMISSION_REQUEST_CODE=2;
-//    private Bundle Arguments;
-//    private Button bs;
-//    //      T = 1s
-//    private int mInterval = 1000;
-//    //      Handler for repeated send
-//    private Handler mHandler;
-//
-//    MqttClient client;
-//    MqttMessage mess;
-//    CSVReadlines csvlines;
-//    int row;
-//
-//
-//
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_publish);
-//
-//
-//
-//        bs = findViewById(R.id.stop);
-//        bs.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                try {
-//                    CancelSend("You cancelled the trasmission");
-//                } catch (MqttException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
-//
-//
-//        Intent i = getIntent();
-//        Arguments = i.getExtras();
-//
-////            Log.d("checktopic", Arguments.getString("IP"));
-//
-////            Log.d("checkip",Arguments.getString("IP"));
-////            Log.d("checktopic",Arguments.getString("topic1"));
-//
-//        ((TextView)findViewById(R.id.textView2)).setText(Arguments.getString("topic"));
-//
-//        //get file path
-//        Intent intent = new Intent(this, CSVgetFile.class);
-//        startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
-//
-
-//
-//
-//        handler for repeating task
-//        mHandler = new Handler();
-//
-//
-//
-//    }
-
-
-//    @Override
-//    public void onDestroy() {
-//        super.onDestroy();
-//        stopRepeatingTask();
-//    }
 
     private void CancelSend(String message) throws MqttException {
 
@@ -555,8 +435,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
-
-
 
 
     //repeated task

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
@@ -23,16 +21,10 @@ import android.content.Intent;
 
 
 import android.widget.Button;
-import com.example.diprojectandroid17_139_011_197.CSV.CSVgetFile;
 import com.example.diprojectandroid17_139_011_197.mqtt.MapsActivity;
-import com.example.diprojectandroid17_139_011_197.mqtt.PublishActivity;
-import com.example.diprojectandroid17_139_011_197.mqtt.SubscribeActivity;
 import com.example.diprojectandroid17_139_011_197.network.NetworkChangeReceiver;
 import com.example.diprojectandroid17_139_011_197.network.NetworkSettings;
 import com.example.diprojectandroid17_139_011_197.settings.SettingsActivity;
-import org.eclipse.paho.client.mqttv3.MqttException;
-
-import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {

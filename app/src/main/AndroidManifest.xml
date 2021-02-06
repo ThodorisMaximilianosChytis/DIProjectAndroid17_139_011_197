@@ -46,8 +46,6 @@
         </activity>
         <activity android:name=".network.NetworkSettings">
         </activity>
-        <activity android:name=".mqtt.SubscribeActivity">
-        </activity>
         <activity android:name=".mqtt.PublishActivity">
         </activity>
         <activity android:name=".settings.SettingsActivity">
