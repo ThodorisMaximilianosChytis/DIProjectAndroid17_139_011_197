@@ -40,22 +40,3 @@ public class SimpleMqttCallback implements MqttCallback {
 
 
 
-/*
-terminal 1 one edge server:
-mosquitto -p <port>
-
-....
-
-sudo service mosquitto stop
-sudo systemctl stop mosquitto.service
-
-
-IP on edge server: 127.0.0.1
-
-IP in Android App: find out from terminal 2 in EdgeSServer
-Port everywhere the same
-
-ifconfig
-flag braodcast: inet IP
-
- */

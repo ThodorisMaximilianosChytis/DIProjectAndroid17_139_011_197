@@ -30,12 +30,12 @@ import com.example.diprojectandroid17_139_011_197.settings.SettingsActivity;
 public class MainActivity extends AppCompatActivity {
 
 
-    private Button b1, b2, b3, b4;
+    private Button b2, b3, b4;
 
 
 
     private static final int SETTINGS_REQUEST_CODE=2;
-    private static final int CSVPERMISSION_REQUEST_CODE=3;
+
 
     Bundle Arguments;
     private NetworkChangeReceiver mNetworkReceiver;
@@ -59,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
     public void Subscribe() {
 
         Intent intent = new Intent(this, MapsActivity.class);
-//        intent.setData(Uri.parse(Arguments.getString("csvURI")));
-//        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
         String t1 = updateTopic();
 
         intent.putExtra("topic", t1);
@@ -93,15 +92,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             }
-//            case (CSVPERMISSION_REQUEST_CODE): {
-//
-//                if (resultCode ==1){
-//                    Arguments.putString("csvURI",data.getStringExtra("csvURI"));
-//                }else{
-//                    Toast.makeText(getApplicationContext(),"No file selected", Toast.LENGTH_LONG).show();
-//                }
-//                break;
-//            }
         }
     }
 
@@ -145,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         Arguments.putString("IP","test.mosquitto.org");
         Arguments.putInt("Port",1883);
         Arguments.putInt("t",-1);
-        Arguments.putString("csvURI","nadas");
+        Arguments.putString("csvURI","nada");
 
         //WORK WITH BUTTONS
 

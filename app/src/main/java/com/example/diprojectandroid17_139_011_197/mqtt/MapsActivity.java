@@ -49,20 +49,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     int follow_vehicle = 6;
 
     private Bundle Arguments;
-    private MqttClient clientsub;
-    private CSVReadlines csvlines;
+    private MqttClient clientsub=null;
+    MqttClient clientpub=null;
 
+    private CSVReadlines csvlines;
     private Button bs;
     //      T = 1s
     private int mInterval = 1000;
     //      Handler for repeated send
     private Handler mHandler;
-
-    MqttClient clientpub;
     MqttMessage mess;
 
-    double DistanceSum=0.0;
 
+
+    //Receives a signal and handles mqtt messages
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -90,39 +90,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //                Toast.makeText(getApplicationContext(), String.valueOf(DistanceSum) , Toast.LENGTH_LONG).show();
 
 
-                updateRoutereal(reallat ,realong,realRSSI,realThroughput);
-                updateRoutepred( predlat, predlong, predRSSI, predThroughput );
-                updateInfoWindow(predRSSI,predThroughput,realRSSI,realThroughput);
+                updateRoutereal(reallat ,realong);
+                updateRoutepred( predlat, predlong);
+                updateInfoWindow(predRSSI,predThroughput,realRSSI,realThroughput,reallat,realong,predlat,predlong);
 
             }
         }
     };
 
 
-
-    public static void setMarker(double Lat, double Long,String info) {
-
-
-        if(mMap!=null){
-
-            LatLng P = new LatLng(Lat,Long );
-
-            Marker MP1 = mMap.addMarker(new MarkerOptions().position(P).title("Marker piou").snippet("pioupioupiou"));
-
-            Log.d("tobad","tobad");
-        }
-
-
-
-    }
-
-    private void updateInfoWindow(double rssipre, double throughputpre, double rssireal, double throughputreal  ){
+    private void updateInfoWindow(double rssipre, double throughputpre, double rssireal, double throughputreal,double reallat,double realong, double predlat, double predlong){
         if (realMarker!=null) {
             mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(MapsActivity.this));
 
             realMarker.setTitle("Vehicle Info");
-            realMarker.setSnippet("Predicted--> RSSI:  " + rssipre + "___THROUGPUT:   " + throughputpre +
-                    "\nReal--> RSSI   :" + rssireal + "___THROUGPUT:   " + throughputreal);
+            realMarker.setSnippet("Predicted--> Lat:  " + predlat + "\nLong:  " + predlong +"\nRssi:  " + rssipre + "\nThroughput:  " + throughputpre +
+                    "\nReal--> Lat:  " + reallat + "\nLong:  " + realong + "\nRSSI:  " + rssireal + "\nThroughput: " + throughputreal);
 
             realMarker.showInfoWindow();
 
@@ -132,7 +115,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public void updateRoutereal(double lat,double lon,double rssi, double throughput) {
+    public void updateRoutereal(double lat,double lon) {
         LatLng point = new LatLng(lat, lon);
             if (prevRealPosition == null)
                 prevRealPosition = point;
@@ -148,12 +131,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (realMarker != null)
                         realMarker.remove();
 
-                    realMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition)
-//                            .title("Real Vehicle")
-//                            .snippet("RSSI: "+ rssi + "Throughput: "+ throughput)
-                    );
+                    realMarker = mMap.addMarker(new MarkerOptions().position(lastRealPosition));
 
-//                    realMarker.showInfoWindow();
 
                     prevRealPosition = point;
                 } catch (Exception e) {
@@ -163,7 +142,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    public void updateRoutepred(double lat,double lon,double rssi, double throughput) {
+    public void updateRoutepred(double lat,double lon) {
         LatLng point = new LatLng(lat, lon);
         if (follow_vehicle==6) {
             follow_vehicle = 0;
@@ -171,7 +150,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         follow_vehicle++;
 
-//        mMap.animateCamera(CameraUpdateFactory.zoomTo(18), 700, null);
         if (prevPredPosition == null) {
             prevPredPosition = point;
         }
@@ -192,14 +170,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 predMarker = mMap.addMarker(new MarkerOptions().position(lastPredPosition)
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-//                        .title("Predicted Vehicle")
-//                        .snippet("RSSI: "+ rssi + "Throughput: "+ throughput)
-                        .rotation(180)
-//                        .infoWindowAnchor(1,1)
-                );
-
-//                predMarker.showInfoWindow();
-
+                        .rotation(180));
 
                 prevPredPosition = point;
             } catch (Exception e) {
@@ -232,12 +203,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
+
+        //  GET FILE
         Intent intent = new Intent(this, CSVgetFile.class);
         startActivityForResult(intent,CSVPERMISSION_REQUEST_CODE);
 
 
 
-
+        //register receiver
         IntentFilter filter = new IntentFilter("MAP_UPDATE");
         this.registerReceiver(receiver,filter);
 
@@ -250,11 +223,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
-        mHandler = new Handler();
 
+        mHandler = new Handler();
 
     }
 
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        unregisterReceiver(receiver);
+        stopRepeatingTask();
+
+    }
 
 
     /**
@@ -299,7 +280,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
-
+//---------------------------------------------SUBSCRIBE----------------------------------------------
     private void Subscribe() throws MqttException {
 
         Toast.makeText(getApplicationContext(), "SUBSCRIBER to " + Arguments.getString("topic"), Toast.LENGTH_LONG).show();
@@ -313,7 +294,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                Log.d("MqttCallback","Connection to MQTT broker lost!");
             }
 
             @Override
@@ -335,7 +316,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                Log.d("MqttCallback","delivery complete!");
             }
         });
 
@@ -345,21 +326,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
-        @Override
-        protected void onDestroy(){
-            super.onDestroy();
-            unregisterReceiver(receiver);
-            stopRepeatingTask();
-
-        }
-
-
+//    -----------------------------PUBLISH--------------------------------------------------
     private void CancelSend(String message) throws MqttException {
 
         String stop = "@SendingStops@";
         mess.setPayload(stop.getBytes());
-        clientsub.publish(Arguments.getString("topic") + "/a2e",mess);
+        clientpub.publish(Arguments.getString("topic") + "/a2e",mess);
 
         stopRepeatingTask();
         Toast.makeText(getApplicationContext(),message, Toast.LENGTH_LONG).show();
@@ -380,7 +352,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
                     try {
-                        Connect(data.getStringExtra("csvURI"));
+                            Connect(data.getStringExtra("csvURI"));
                     } catch (MqttException e) {
                         e.printStackTrace();
                         Toast.makeText(getApplicationContext(),"Could not connect to " + "tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), Toast.LENGTH_LONG).show();
@@ -401,22 +373,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
+    //Connect with IP nad port to start publishing
     private void Connect(String csvUriString) throws IOException, MqttException {
 //        String IP="test.mosquitto.org";
 //        String Port="1883";
 
-//            Log.d("checkip",Arguments.getString("IP"));
+            Log.d("checkip",Arguments.getString("IP"));
 //            Log.d("checktopic",Arguments.getString("topic"));
+
+
 
         String clientId= MqttClient.generateClientId();
 
 
-        try {
-            clientpub = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+        clientpub = new MqttClient("tcp://" + Arguments.getString("IP") + ":" + Arguments.getInt("Port"), clientId, new MemoryPersistence());
+
 
 
         clientpub.setCallback(new SimpleMqttCallback());
@@ -470,8 +441,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mHandler.postDelayed(mRepeatSend, mInterval);
         }
     };
-
-
+    //next line of file
     private void updaterow() throws MqttException {
         row++;
         if(isNetworkAvailable()==false){
