@@ -104,8 +104,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(MapsActivity.this));
 
             realMarker.setTitle("Vehicle Info");
-            realMarker.setSnippet("Predicted--> Lat:  " + predlat + "\nLong:  " + predlong +"\nRssi:  " + rssipre + "\nThroughput:  " + throughputpre +
-                    "\nReal--> Lat:  " + reallat + "\nLong:  " + realong + "\nRSSI:  " + rssireal + "\nThroughput: " + throughputreal);
+            realMarker.setSnippet("Predicted (BLUE)-> Lat:  " + predlat + "\nLong:  " + predlong +"\nRssi:  " + rssipre + "\nThroughput:  " + throughputpre +
+                    "\nReal (RED)-> Lat:  " + reallat + "\nLong:  " + realong + "\nRSSI:  " + rssireal + "\nThroughput: " + throughputreal);
 
             realMarker.showInfoWindow();
 

@@ -30,8 +30,8 @@
             android:layout_gravity="center_horizontal"
             android:id="@+id/snippet"
             android:ellipsize="end"
-            android:maxLines="8"
-            android:textSize="14sp"
+            android:maxLines="10"
+            android:textSize="13sp"
             android:textColor="#000"/>
 
 
